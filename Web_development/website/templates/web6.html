@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>веб сервис</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=7c7da789-9527-411e-b485-f9135af851e0&lang=ru_RU" type="text/javascript"></script>
+    <style>
+        @keyframes pixelGlow {
+            0%, 100% { 
+                box-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00;
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes pixelFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        @keyframes pixelShimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes matrixRain {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @keyframes pixelPulse {
+            0%, 100% { 
+                background-color: #007bff; 
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+            50% { 
+                background-color: #0056b3; 
+                box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+        }
+
+        body {
+            background: linear-gradient(45deg, #001122, #002244, #003366);
+            background-size: 400% 400%;
+            animation: pixelShimmer 4s ease infinite;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Пиксельная сетка на фоне */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Сканирующие линии */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: scanlines 3s linear infinite;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            font-family: 'Press Start 2P', cursive;
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 0;
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        #map {
+            width: 100%;
+            height: 500px;
+            border: 3px solid #00ff00;
+            border-radius: 0;
+            position: relative;
+            animation: pixelGlow 2s ease-in-out infinite;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            padding: 15px 25px;
+            background: #007bff;
+            color: white;
+            border: 2px solid #00ffff;
+            border-radius: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: pixelFloat 3s ease-in-out infinite;
+            image-rendering: pixelated;
+            box-shadow: 
+                4px 4px 0px #003d82,
+                0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        button:hover {
+            background: #0056b3;
+            transform: translate(-2px, -2px);
+            box-shadow: 
+                6px 6px 0px #003d82,
+                0 0 20px rgba(0, 255, 255, 0.6);
+            animation: pixelPulse 0.5s ease infinite;
+        }
+
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 
+                2px 2px 0px #003d82,
+                0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        button:nth-child(1) { animation-delay: 0s; }
+        button:nth-child(2) { animation-delay: 0.5s; }
+        button:nth-child(3) { animation-delay: 1s; }
+        button:nth-child(4) { animation-delay: 1.5s; }
+
+        .info {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 15px;
+            border: 2px solid #00ff00;
+            border-radius: 0;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 0 10px rgba(0, 255, 0, 0.3),
+                inset 0 0 10px rgba(0, 255, 0, 0.1);
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .photo-item {
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(0, 255, 255, 0.2);
+            border: 3px solid #00ffff;
+            border-radius: 0;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s ease;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05) rotate(1deg);
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(0, 255, 0, 0.4);
+            border-color: #00ff00;
+            animation: pixelGlow 1s ease infinite;
+        }
+
+        .photo-item::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff00, #00ffff, #ff00ff, #ffff00);
+            background-size: 400% 400%;
+            animation: pixelShimmer 3s ease infinite;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .photo-item:hover::before {
+            opacity: 1;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            display: block;
+            filter: contrast(1.1) saturate(1.2);
+            transition: filter 0.3s ease;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .photo-item:hover img {
+            filter: contrast(1.3) saturate(1.4) hue-rotate(10deg);
+        }
+
+        .photo-caption {
+            padding: 15px;
+            background: linear-gradient(135deg, #000428, #004e92);
+            text-align: center;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #00ffff;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .photo-caption::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .photo-item:hover .photo-caption::before {
+            left: 100%;
+        }
+
+        /* Пиксельные частицы */
+        .pixel-particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #00ff00;
+            pointer-events: none;
+            z-index: 1000;
+            animation: matrixRain 8s linear infinite;
+        }
+
+        .pixel-particle:nth-child(2n) {
+            background: #00ffff;
+            animation-duration: 6s;
+        }
+
+        .pixel-particle:nth-child(3n) {
+            background: #ff00ff;
+            animation-duration: 10s;
+        }
+
+        /* Глитч эффект для заголовка */
+        .glitch {
+            position: relative;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 0.5s infinite;
+            color: #ff00ff;
+            z-index: -1;
+        }
+
+        .glitch::after {
+            animation: glitch-2 0.5s infinite;
+            color: #00ff00;
+            z-index: -2;
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% {
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+                filter: hue-rotate(90deg);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+                filter: hue-rotate(180deg);
+            }
+            60% {
+                transform: translate(2px, 2px);
+                filter: hue-rotate(270deg);
+            }
+            80% {
+                transform: translate(2px, -2px);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(2px, 0);
+            }
+            40% {
+                transform: translate(-2px, 0);
+            }
+            60% {
+                transform: translate(0, 2px);
+            }
+            80% {
+                transform: translate(0, -2px);
+            }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 80%;
+                margin: 5px 0;
+            }
+            
+            .photo-gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">           
+            <button onclick="showTokyo()" class="glitch" data-text="Токио(центр)">Токио(центр)</button>  
+            <button onclick="show_akihabara()">Токио(Акихабара)</button>
+            <button onclick="window.location.href='/atre-akihabara/'">atré Akihabara 2</button>
+            <button onclick="window.location.href='/yodobashi/'">Ёдобаси Акиба</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="photo-gallery">
+            <!-- Фотографии будут загружаться динамически из базы данных -->
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let myMap, markers = [];
+        
+        // Создание пиксельных частиц
+        function createPixelParticles() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'pixel-particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(particle);
+                    
+                    // Удаляем частицу после анимации
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 10000);
+                }, i * 200);
+            }
+        }
+
+        // Запускаем создание частиц каждые 3 секунды
+        setInterval(createPixelParticles, 3000);
+        createPixelParticles(); // Создаем первую партию сразу
+        
+        // Инициализация карты после загрузки API
+        ymaps.ready(init);
+        
+        function init() {
+            // Создание карты с центром в Токио
+            myMap = new ymaps.Map("map", {
+                center: [35.698500, 139.779495], // Координаты Акихабары
+                zoom: 15,
+                controls: ['zoomControl', 'searchControl', 'typeSelector', 'fullscreenControl']
+            });
+
+            // Добавление основной метки для Токио
+            addMarker([35.682839, 139.759455], "Токио", "Столица Японии");
+
+            updateCoordinates();
+        }
+        
+        function addMarker(coords, title, description) {
+            const placemark = new ymaps.Placemark(coords, {
+                balloonContent: `<strong>${title}</strong><br>${description}`
+            }, {
+                preset: 'islands#redDotIcon'
+            });
+            myMap.geoObjects.add(placemark);
+            markers.push(placemark);
+        }
+
+        function updateCoordinates() {
+            // Функция для обновления координат (если нужно)
+        }
+        
+        // Функции для переключения между городами с эффектами
+        function showTokyo() {
+            myMap.setCenter([35.682839, 139.759455], 15);
+            createPixelBurst();
+        }
+        
+        function show_akihabara() {
+            myMap.setCenter([35.698500, 139.779495], 15);
+            createPixelBurst();
+        }
+
+        // Создание взрыва пикселей при клике на кнопку
+        function createPixelBurst() {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = ['#00ff00', '#00ffff', '#ff00ff'][Math.floor(Math.random() * 3)];
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                
+                const angle = (i / 10) * Math.PI * 2;
+                const distance = 100 + Math.random() * 100;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+                
+                document.body.appendChild(particle);
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                };
+            }
+        }
+
+        // Функция для загрузки фотографий из базы данных
+        function loadPhotosFromDB() {
+            fetch('/api/photos')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка сети');
+                    }
+                    return response.json();
+                })
+                .then(photos => {
+                    const gallery = document.querySelector('.photo-gallery');
+                    gallery.innerHTML = ''; // Очищаем галерею перед добавлением фото
+                    
+                    photos.forEach((photo, index) => {
+                        const photoDiv = document.createElement('div');
+                        photoDiv.className = 'photo-item';
+                        photoDiv.style.animationDelay = (index * 0.1) + 's';
+                        
+                        photoDiv.innerHTML = `
+                            <img src="/static/images/${photo.image_path}" alt="${photo.caption}">
+                            <div class="photo-caption">${photo.caption}</div>
+                        `;
+                        
+                        gallery.appendChild(photoDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки фотографий:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.cssText = `
+                        color: #ff0000; 
+                        text-align: center; 
+                        padding: 20px; 
+                        font-family: 'Press Start 2P', cursive; 
+                        font-size: 12px;
+                        border: 2px solid #ff0000;
+                        background: rgba(255, 0, 0, 0.1);
+                        text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+                    `;
+                    errorDiv.textContent = 'Ошибка загрузки фотографий. Проверьте подключение к серверу.';
+                    document.querySelector('.photo-gallery').appendChild(errorDiv);
+                });
+        }
+
+        // Добавляем звуковые эффекты при наведении на кнопки (если браузер поддерживает)
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                // Можно добавить Web Audio API для пиксельных звуков
+                createMiniPixelBurst(button);
+            });
+        });
+
+        function createMiniPixelBurst(element) {
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '3px';
+                particle.style.height = '3px';
+                particle.style.background = '#00ffff';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1001';
+                particle.style.left = (rect.left + rect.width / 2) + 'px';
+                particle.style.top = (rect.top + rect.height / 2) + 'px';
+                
+                document.body.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 20 + Math.random() * 30;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 500,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                };
+            }
+        }
+
+        // Вызываем функцию сразу после загрузки страницы
+        window.addEventListener('load', function() {
+            loadPhotosFromDB();
+        });
+    </script>
+</body>
+</html>
