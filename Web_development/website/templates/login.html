@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в админ-панель</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #001122;
+            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            color: #00ffff;
+            font-size: 12px;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            color: #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+        }
+
+        button {
+            background: #003366;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 10px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #004488;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .error-message {
+            color: #ff0000;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            margin-bottom: 20px;
+            font-size: 10px;
+        }
+
+        .back-link {
+            color: #00ffff;
+            text-decoration: none;
+            font-size: 10px;
+            margin-top: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .back-link:hover {
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 style="text-align: center; margin-bottom: 30px;">Вход в систему</h2>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-message">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" class="login-form">
+            <div class="form-group">
+                <label for="username">Имя пользователя:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit">Войти</button>
+        </form>
+        
+        <a href="/" class="back-link">← На главную</a>
+    </div>
+</body>
+</html>

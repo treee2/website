@@ -1,0 +1,19 @@
+{
+    "photos": [
+        {
+            "id": 1,
+            "image_path": "images/1.jpg",
+            "caption": "Токио, район Синдзюку"
+        },
+        {
+            "id": 2,
+            "image_path": "images/2.jpg",
+            "caption": "Храм Сэнсо-дзи"
+        },
+        {
+            "id": 3,
+            "image_path": "images/3.jpg",
+            "caption": "Башня Скайтри"
+        }
+    ]
+}

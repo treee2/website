@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>atré Akihabara 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=7c7da789-9527-411e-b485-f9135af851e0&lang=ru_RU" type="text/javascript"></script>
+    <style>
+        @keyframes pixelGlow {
+            0%, 100% { 
+                box-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 15px #ff00ff;
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 30px #00ffff;
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes pixelFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        @keyframes pixelShimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        @keyframes matrixRain {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @keyframes pixelPulse {
+            0%, 100% { 
+                background-color: #007bff; 
+                box-shadow: 0 0 0 0 rgba(255, 0, 255, 0.7);
+            }
+            50% { 
+                background-color: #ff00ff; 
+                box-shadow: 0 0 0 10px rgba(255, 0, 255, 0);
+            }
+        }
+
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
+            50% { text-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff, 0 0 35px #00ffff; }
+        }
+
+        @keyframes infoBlockFloat {
+            0%, 100% { transform: translateY(0px) rotateX(0deg); }
+            50% { transform: translateY(-3px) rotateX(1deg); }
+        }
+
+        body {
+            background: linear-gradient(45deg, #2d1b69, #11998e, #38ef7d);
+            background-size: 400% 400%;
+            animation: pixelShimmer 6s ease infinite;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Пиксельная сетка на фоне */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 0, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 255, 0.05) 1px, transparent 1px);
+            background-size: 15px 15px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Сканирующие линии */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff00ff, #00ffff, #ff00ff, transparent);
+            animation: scanlines 4s linear infinite;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 25px;
+            font-family: 'Press Start 2P', cursive;
+            position: relative;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.2);
+            border: 3px solid #ff00ff;
+            border-radius: 0;
+            box-shadow: 
+                0 0 30px rgba(255, 0, 255, 0.4),
+                inset 0 0 20px rgba(255, 0, 255, 0.1);
+            animation: pixelFloat 4s ease-in-out infinite;
+        }
+
+        #map {
+            width: 100%;
+            height: 500px;
+            border: 4px solid #00ffff;
+            border-radius: 0;
+            position: relative;
+            animation: pixelGlow 3s ease-in-out infinite;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            margin: 20px 0;
+        }
+
+        button {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            padding: 18px 30px;
+            background: linear-gradient(45deg, #ff00ff, #8000ff);
+            color: white;
+            border: 3px solid #00ffff;
+            border-radius: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+            position: relative;
+            transition: all 0.3s ease;
+            animation: pixelFloat 3s ease-in-out infinite;
+            image-rendering: pixelated;
+            box-shadow: 
+                5px 5px 0px #800080,
+                0 0 15px rgba(255, 0, 255, 0.4);
+            margin-bottom: 25px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            transform: translate(-3px, -3px);
+            box-shadow: 
+                8px 8px 0px #800080,
+                0 0 25px rgba(0, 255, 255, 0.6);
+            animation: pixelPulse 0.6s ease infinite;
+        }
+
+        button:active {
+            transform: translate(3px, 3px);
+            box-shadow: 
+                2px 2px 0px #800080,
+                0 0 10px rgba(255, 0, 255, 0.3);
+        }
+
+        .info-block {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            padding: 25px;
+            border: 3px solid #00ffff;
+            border-radius: 0;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(0, 255, 255, 0.3),
+                inset 0 0 20px rgba(0, 255, 255, 0.1);
+            animation: infoBlockFloat 5s ease-in-out infinite;
+            transition: all 0.4s ease;
+        }
+
+        .info-block:hover {
+            transform: scale(1.02) rotateY(2deg);
+            border-color: #ff00ff;
+            box-shadow: 
+                0 12px 24px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(255, 0, 255, 0.5),
+                inset 0 0 30px rgba(255, 0, 255, 0.2);
+        }
+
+        .info-block::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff, #ffff00, #ff00ff);
+            background-size: 400% 400%;
+            animation: pixelShimmer 4s ease infinite;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .info-block:hover::before {
+            opacity: 0.8;
+        }
+
+        .info-block h2 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: textGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        .info-block h2::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+            animation: pixelShimmer 3s ease infinite;
+        }
+
+        .info-block p {
+            line-height: 1.8;
+            color: #00ffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            margin: 15px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #00ffff;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 8px;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .features-list li:hover {
+            color: #ff00ff;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+            transform: translateX(5px);
+        }
+
+        .features-list li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #ff00ff;
+            animation: pixelFloat 2s ease-in-out infinite;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+        }
+
+        .features-list li:nth-child(odd):before {
+            animation-delay: 0.5s;
+        }
+
+        /* Пиксельные частицы */
+        .pixel-particle {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background: #ff00ff;
+            pointer-events: none;
+            z-index: 1000;
+            animation: matrixRain 10s linear infinite;
+        }
+
+        .pixel-particle:nth-child(2n) {
+            background: #00ffff;
+            animation-duration: 8s;
+        }
+
+        .pixel-particle:nth-child(3n) {
+            background: #ffff00;
+            animation-duration: 12s;
+        }
+
+        /* Глитч эффект для заголовка */
+        .glitch {
+            position: relative;
+            color: #ff00ff;
+            text-shadow: 0 0 15px rgba(255, 0, 255, 0.8);
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 0.6s infinite;
+            color: #00ffff;
+            z-index: -1;
+        }
+
+        .glitch::after {
+            animation: glitch-2 0.6s infinite;
+            color: #ffff00;
+            z-index: -2;
+        }
+
+        @keyframes glitch-1 {
+            0%, 100% {
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+            20% {
+                transform: translate(-2px, 2px);
+                filter: hue-rotate(90deg);
+            }
+            40% {
+                transform: translate(-2px, -2px);
+                filter: hue-rotate(180deg);
+            }
+            60% {
+                transform: translate(2px, 2px);
+                filter: hue-rotate(270deg);
+            }
+            80% {
+                transform: translate(2px, -2px);
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        @keyframes glitch-2 {
+            0%, 100% {
+                transform: translate(0);
+            }
+            20% {
+                transform: translate(2px, 0);
+            }
+            40% {
+                transform: translate(-2px, 0);
+            }
+            60% {
+                transform: translate(0, 2px);
+            }
+            80% {
+                transform: translate(0, -2px);
+            }
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            button {
+                width: 100%;
+                margin: 10px 0;
+            }
+            
+            .info-block {
+                margin: 15px 0;
+                padding: 20px;
+            }
+            
+            .info-block h2 {
+                font-size: 12px;
+            }
+            
+            .info-block p, .features-list li {
+                font-size: 7px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="back-button glitch" data-text="Назад на главную" onclick="window.location.href='/'">Назад на главную</button>
+        
+        <div class="info-block">
+            <h2>atré Akihabara 2</h2>
+            <p>Торговый центр atré Akihabara 2 расположен в самом сердце района Акихабара, известного как центр электроники и аниме-культуры в Токио. Здание находится прямо у станции JR Akihabara.</p>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="info-block">
+            <h2>Информация</h2>
+            <p>Адрес: 1 Chome-9 Sotokanda, Chiyoda City, Tokyo 101-0021, Япония</p>
+            <p>Время работы: 10:00-21:00</p>
+            <p>В торговом центре расположены магазины одежды, аксессуаров, косметики, а также различные кафе и рестораны.</p>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let myMap;
+        
+        // Создание пиксельных частиц
+        function createPixelParticles() {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'pixel-particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.animationDelay = Math.random() * 3 + 's';
+                    document.body.appendChild(particle);
+                    
+                    // Удаляем частицу после анимации
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 12000);
+                }, i * 150);
+            }
+        }
+
+        // Запускаем создание частиц каждые 4 секунды
+        setInterval(createPixelParticles, 4000);
+        createPixelParticles(); // Создаем первую партию сразу
+        
+        ymaps.ready(init);
+        
+        function init() {
+            myMap = new ymaps.Map("map", {
+                center: [35.698372, 139.773085], // Координаты atré Akihabara 2
+                zoom: 17,
+                controls: ['zoomControl', 'searchControl', 'typeSelector', 'fullscreenControl']
+            });
+
+            // Добавляем метку на карту
+            const marker = new ymaps.Placemark([35.698372, 139.773085], {
+                balloonContent: 'atré Akihabara 2'
+            });
+            myMap.geoObjects.add(marker);
+        }
+
+        // Создание взрыва пикселей при клике на кнопку
+        function createPixelBurst(element) {
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '6px';
+                particle.style.height = '6px';
+                particle.style.background = ['#ff00ff', '#00ffff', '#ffff00'][Math.floor(Math.random() * 3)];
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1000';
+                particle.style.left = (rect.left + rect.width / 2) + 'px';
+                particle.style.top = (rect.top + rect.height / 2) + 'px';
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 80 + Math.random() * 80;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+                
+                document.body.appendChild(particle);
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1200,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                };
+            }
+        }
+
+        // Добавляем эффекты при наведении на кнопки
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                createMiniPixelBurst(button);
+            });
+            
+            button.addEventListener('click', () => {
+                createPixelBurst(button);
+            });
+        });
+
+        function createMiniPixelBurst(element) {
+            const rect = element.getBoundingClientRect();
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'fixed';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                particle.style.background = '#ff00ff';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '1001';
+                particle.style.left = (rect.left + rect.width / 2) + 'px';
+                particle.style.top = (rect.top + rect.height / 2) + 'px';
+                
+                document.body.appendChild(particle);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 15 + Math.random() * 25;
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+                
+                particle.animate([
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                    { transform: `translate(${endX}px, ${endY}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600,
+                    easing: 'ease-out'
+                }).onfinish = () => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                };
+            }
+        }
+    </script>
+</body>
+</html>

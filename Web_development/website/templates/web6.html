@@ -383,12 +383,13 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="controls">           
+    <div class="container">        <div class="controls">           
             <button onclick="showTokyo()" class="glitch" data-text="Токио(центр)">Токио(центр)</button>  
             <button onclick="show_akihabara()">Токио(Акихабара)</button>
             <button onclick="window.location.href='/atre-akihabara/'">atré Akihabara 2</button>
             <button onclick="window.location.href='/yodobashi/'">Ёдобаси Акиба</button>
+            <button onclick="window.location.href='/gallery'" class="glitch" data-text="Галерея">Галерея</button>
+            <button onclick="window.location.href='/admin'" style="background: #004400;">Админ</button>
         </div>
 
         <div id="map"></div>
@@ -501,18 +502,18 @@
             }
         }
 
-        // Функция для загрузки фотографий из базы данных
+        // Функция для загрузки фотографий из JSON
         function loadPhotosFromDB() {
             fetch('/api/photos')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Ошибка сети');
+                        throw new Error('Ошибка загрузки фотографий');
                     }
                     return response.json();
                 })
                 .then(photos => {
                     const gallery = document.querySelector('.photo-gallery');
-                    gallery.innerHTML = ''; // Очищаем галерею перед добавлением фото
+                    gallery.innerHTML = '';
                     
                     photos.forEach((photo, index) => {
                         const photoDiv = document.createElement('div');
@@ -520,7 +521,8 @@
                         photoDiv.style.animationDelay = (index * 0.1) + 's';
                         
                         photoDiv.innerHTML = `
-                            <img src="/static/images/${photo.image_path}" alt="${photo.caption}">
+                            <img src="/${photo.image_path}" alt="${photo.caption}" 
+                                 onerror="this.src='/static/images/error.jpg'">
                             <div class="photo-caption">${photo.caption}</div>
                         `;
                         
@@ -528,20 +530,13 @@
                     });
                 })
                 .catch(error => {
-                    console.error('Ошибка загрузки фотографий:', error);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.style.cssText = `
-                        color: #ff0000; 
-                        text-align: center; 
-                        padding: 20px; 
-                        font-family: 'Press Start 2P', cursive; 
-                        font-size: 12px;
-                        border: 2px solid #ff0000;
-                        background: rgba(255, 0, 0, 0.1);
-                        text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+                    console.error('Ошибка:', error);
+                    const gallery = document.querySelector('.photo-gallery');
+                    gallery.innerHTML = `
+                        <div style="color: red; text-align: center; padding: 20px;">
+                            Ошибка загрузки фотографий: ${error.message}
+                        </div>
                     `;
-                    errorDiv.textContent = 'Ошибка загрузки фотографий. Проверьте подключение к серверу.';
-                    document.querySelector('.photo-gallery').appendChild(errorDiv);
                 });
         }
 

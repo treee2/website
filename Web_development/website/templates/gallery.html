@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #001122;
+            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .gallery-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .photo-item {
+            border: 2px solid #00ff00;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border: 1px solid #00ffff;
+        }
+
+        .photo-caption {
+            color: #00ff00;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #003366;
+            color: #00ff00;
+            text-decoration: none;
+            border: 2px solid #00ff00;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: #004488;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <a href="/" class="back-button">← Назад</a>
+        <div class="gallery" id="photoGallery">
+            <!-- Фотографии будут загружены через JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Загрузка фотографий
+        async function loadPhotos() {
+            try {
+                const response = await fetch('/api/photos');
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки');
+                }
+                const photos = await response.json();
+                displayPhotos(photos);
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('photoGallery').innerHTML = `
+                    <div style="color: red; text-align: center; grid-column: 1/-1;">
+                        Ошибка загрузки фотографий: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Отображение фотографий
+        function displayPhotos(photos) {
+            const gallery = document.getElementById('photoGallery');
+            gallery.innerHTML = photos.map(photo => `
+                <div class="photo-item">
+                    <img src="/static/${photo.image_path}" 
+                         alt="${photo.caption}"
+                         onerror="this.src='/static/images/error.jpg'">
+                    <div class="photo-caption">${photo.caption}</div>
+                </div>
+            `).join('');
+        }
+
+        // Загружаем фотографии при загрузке страницы
+        window.addEventListener('load', loadPhotos);
+    </script>
+</body>
+</html>
