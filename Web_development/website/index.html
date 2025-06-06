@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>веб сервис</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://api-maps.yandex.ru/2.1/?apikey=7c7da789-9527-411e-b485-f9135af851e0&lang=ru_RU" type="text/javascript"></script>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=7c7da789-9527-411e-b485-f9135af851e0&lang=ru_RU" type="text/javascript">
+        fetch('/static/locations.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // работа с JSON
+            });
+
+    </script>
     <style>
         @keyframes pixelGlow {
             0%, 100% { 
